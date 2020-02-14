@@ -1,8 +1,12 @@
-*Looking for a shareable component template? Go here --> [sveltejs/component-template](https://github.com/sveltejs/component-template)*
+# Svelte story template
+
+This is a short example of how to biuld a conditional fullpage spa with svelte. Theres an array of subcomponents that renders until a certain condition is met - then they dispatch a message to App.js that switches between scenes. 
+
+<a href='https://svelte-story-template.now.sh/'>See demo on now</a>
 
 ---
 
-# svelte app
+## svelte app
 
 This is a project template for [Svelte](https://svelte.dev) apps. It lives at https://github.com/sveltejs/template.
 
