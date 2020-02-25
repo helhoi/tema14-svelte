@@ -1,6 +1,7 @@
 <script>
     import { createEventDispatcher } from 'svelte'      
-    import { fade } from 'svelte/transition' 
+    import Man from './Man.svelte'
+
 
     const dispatch = createEventDispatcher()
 
@@ -8,28 +9,32 @@
 
     let man, manIsDangerouslyCloseToTheEnd = false
 
-    $: {
-        if(man){
-            man.style.transform = `translateX(${scroll/6}px)`
-            console.log(man.getBoundingClientRect().right, width)
-            if(man.getBoundingClientRect().right > width){
-                manIsDangerouslyCloseToTheEnd=true
-            }else{
-                manIsDangerouslyCloseToTheEnd=false
-            }
-        }
-    }
+    let ladder
 
 </script>
 
 <section>
     <h3>scroll to jump →</h3>
 
-    {#if manIsDangerouslyCloseToTheEnd}
-        <h4 transition:fade>Oh, the man is getting close to the wall, you may wanna do something about that...</h4>
+    {#if scroll <= 1000}
+        <Man src='./img/1.png' moveUp='100'/>
+    {:else if scroll >= 1501 && scroll <= 2000}
+        <Man src='./img/3.png' moveForward='-100' />
+    {:else if scroll >= 2001 && scroll <=2500}
+        <Man src='./img/4.png' moveForward='-130' />
+    {:else if scroll >= 2501 && scroll <=2800}
+        <Man src='./img/5.png' moveForward='-130' />
+    {:else if scroll >= 3001 && scroll <=3200}
+        <Man src='./img/6.png' moveForward='-230' />
+    {:else if scroll >= 3501 && scroll <=3800}
+        <Man src='./img/7.png' moveUp='200' moveForward='-200' class='seven' />
+    {:else if scroll >= 4001 && scroll <=4200}
+        <Man src='./img/8.png' moveForward='-130' />
+    {:else}
+        <Man src='./img/2.png' />
     {/if}
+    <img bind:this={ladder} src='./img/stige.png' class='stige' alt='title' />
 
-    <img bind:this={man} src='./img/man.gif' alt='man' class='man' />
 </section>
 
 
@@ -39,12 +44,18 @@
         position:absolute;
         bottom:4rem;
     }
+    
     h4{
         position:absolute;
     }
-    .man{
-        width:300px;
+    .stige{
+        width:600px;
+        top:200px;
         position:absolute;
-        left:4rem;
     }
+    .seven {
+        bottom: 700px;
+    }
+    
+
 </style>

@@ -1,13 +1,13 @@
 {
   "name": "svelte-app",
-  "homepage":"https://simmoe.github.io/tema14-svelte",
+  "homepage": "https://simmoe.github.io/tema14-svelte",
   "version": "1.0.0",
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "start": "sirv public",
     "deploy": "npm run deploy",
-    "predeploy":"gh-pages -d build"
+    "predeploy": "gh-pages -d build"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^11.0.0",

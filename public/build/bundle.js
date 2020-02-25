@@ -292,108 +292,121 @@ var app = (function () {
         }
     }
     const null_transition = { duration: 0 };
-    function create_bidirectional_transition(node, fn, params, intro) {
+    function create_in_transition(node, fn, params) {
         let config = fn(node, params);
-        let t = intro ? 0 : 1;
-        let running_program = null;
-        let pending_program = null;
-        let animation_name = null;
-        function clear_animation() {
+        let running = false;
+        let animation_name;
+        let task;
+        let uid = 0;
+        function cleanup() {
             if (animation_name)
                 delete_rule(node, animation_name);
         }
-        function init(program, duration) {
-            const d = program.b - t;
-            duration *= Math.abs(d);
-            return {
-                a: t,
-                b: program.b,
-                d,
-                duration,
-                start: program.start,
-                end: program.start + duration,
-                group: program.group
-            };
-        }
-        function go(b) {
+        function go() {
             const { delay = 0, duration = 300, easing = identity, tick = noop, css } = config || null_transition;
-            const program = {
-                start: now() + delay,
-                b
-            };
-            if (!b) {
-                // @ts-ignore todo: improve typings
-                program.group = outros;
-                outros.r += 1;
-            }
-            if (running_program) {
-                pending_program = program;
-            }
-            else {
-                // if this is an intro, and there's a delay, we need to do
-                // an initial tick and/or apply CSS animation immediately
-                if (css) {
-                    clear_animation();
-                    animation_name = create_rule(node, t, b, duration, delay, easing, css);
+            if (css)
+                animation_name = create_rule(node, 0, 1, duration, delay, easing, css, uid++);
+            tick(0, 1);
+            const start_time = now() + delay;
+            const end_time = start_time + duration;
+            if (task)
+                task.abort();
+            running = true;
+            add_render_callback(() => dispatch(node, true, 'start'));
+            task = loop(now => {
+                if (running) {
+                    if (now >= end_time) {
+                        tick(1, 0);
+                        dispatch(node, true, 'end');
+                        cleanup();
+                        return running = false;
+                    }
+                    if (now >= start_time) {
+                        const t = easing((now - start_time) / duration);
+                        tick(t, 1 - t);
+                    }
                 }
-                if (b)
-                    tick(0, 1);
-                running_program = init(program, duration);
-                add_render_callback(() => dispatch(node, b, 'start'));
-                loop(now => {
-                    if (pending_program && now > pending_program.start) {
-                        running_program = init(pending_program, duration);
-                        pending_program = null;
-                        dispatch(node, running_program.b, 'start');
-                        if (css) {
-                            clear_animation();
-                            animation_name = create_rule(node, t, running_program.b, running_program.duration, 0, easing, config.css);
-                        }
-                    }
-                    if (running_program) {
-                        if (now >= running_program.end) {
-                            tick(t = running_program.b, 1 - t);
-                            dispatch(node, running_program.b, 'end');
-                            if (!pending_program) {
-                                // we're done
-                                if (running_program.b) {
-                                    // intro — we can tidy up immediately
-                                    clear_animation();
-                                }
-                                else {
-                                    // outro — needs to be coordinated
-                                    if (!--running_program.group.r)
-                                        run_all(running_program.group.c);
-                                }
-                            }
-                            running_program = null;
-                        }
-                        else if (now >= running_program.start) {
-                            const p = now - running_program.start;
-                            t = running_program.a + running_program.d * easing(p / running_program.duration);
-                            tick(t, 1 - t);
-                        }
-                    }
-                    return !!(running_program || pending_program);
-                });
-            }
+                return running;
+            });
         }
+        let started = false;
         return {
-            run(b) {
+            start() {
+                if (started)
+                    return;
+                delete_rule(node);
                 if (is_function(config)) {
-                    wait().then(() => {
-                        // @ts-ignore
-                        config = config();
-                        go(b);
-                    });
+                    config = config();
+                    wait().then(go);
                 }
                 else {
-                    go(b);
+                    go();
                 }
             },
+            invalidate() {
+                started = false;
+            },
             end() {
-                clear_animation();
-                running_program = pending_program = null;
+                if (running) {
+                    cleanup();
+                    running = false;
+                }
+            }
+        };
+    }
+    function create_out_transition(node, fn, params) {
+        let config = fn(node, params);
+        let running = true;
+        let animation_name;
+        const group = outros;
+        group.r += 1;
+        function go() {
+            const { delay = 0, duration = 300, easing = identity, tick = noop, css } = config || null_transition;
+            if (css)
+                animation_name = create_rule(node, 1, 0, duration, delay, easing, css);
+            const start_time = now() + delay;
+            const end_time = start_time + duration;
+            add_render_callback(() => dispatch(node, false, 'start'));
+            loop(now => {
+                if (running) {
+                    if (now >= end_time) {
+                        tick(0, 1);
+                        dispatch(node, false, 'end');
+                        if (!--group.r) {
+                            // this will result in `end()` being called,
+                            // so we don't need to clean up here
+                            run_all(group.c);
+                        }
+                        return false;
+                    }
+                    if (now >= start_time) {
+                        const t = easing((now - start_time) / duration);
+                        tick(1 - t, t);
+                    }
+                }
+                return running;
+            });
+        }
+        if (is_function(config)) {
+            wait().then(() => {
+                // @ts-ignore
+                config = config();
+                go();
+            });
+        }
+        else {
+            go();
+        }
+        return {
+            end(reset) {
+                if (reset && config.tick) {
+                    config.tick(1, 0);
+                }
+                if (running) {
+                    if (animation_name)
+                        delete_rule(node, animation_name);
+                    running = false;
+                }
             }
         };
     }
@@ -580,11 +593,8 @@ var app = (function () {
     	let section;
     	let h3;
     	let t1;
-    	let img0;
-    	let img0_src_value;
-    	let t2;
-    	let img1;
-    	let img1_src_value;
+    	let img;
+    	let img_src_value;
 
     	const block = {
     		c: function create() {
@@ -592,20 +602,14 @@ var app = (function () {
     			h3 = element("h3");
     			h3.textContent = "scroll to climb..";
     			t1 = space();
-    			img0 = element("img");
-    			t2 = space();
-    			img1 = element("img");
-    			attr_dev(h3, "class", "svelte-t5445k");
-    			add_location(h3, file, 28, 4, 1127);
-    			if (img0.src !== (img0_src_value = "./img/ladder.png")) attr_dev(img0, "src", img0_src_value);
-    			attr_dev(img0, "class", "ladder svelte-t5445k");
-    			attr_dev(img0, "alt", "title");
-    			add_location(img0, file, 29, 4, 1158);
-    			if (img1.src !== (img1_src_value = /*src*/ ctx[2])) attr_dev(img1, "src", img1_src_value);
-    			attr_dev(img1, "alt", "climber");
-    			attr_dev(img1, "class", "climber svelte-t5445k");
-    			add_location(img1, file, 30, 4, 1239);
-    			add_location(section, file, 27, 0, 1113);
+    			img = element("img");
+    			attr_dev(h3, "class", "svelte-1m9bzme");
+    			add_location(h3, file, 29, 4, 1139);
+    			if (img.src !== (img_src_value = "./img/stige.png")) attr_dev(img, "src", img_src_value);
+    			attr_dev(img, "class", "stige svelte-1m9bzme");
+    			attr_dev(img, "alt", "title");
+    			add_location(img, file, 30, 4, 1170);
+    			add_location(section, file, 28, 0, 1125);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -614,23 +618,15 @@ var app = (function () {
     			insert_dev(target, section, anchor);
     			append_dev(section, h3);
     			append_dev(section, t1);
-    			append_dev(section, img0);
-    			/*img0_binding*/ ctx[6](img0);
-    			append_dev(section, t2);
-    			append_dev(section, img1);
-    			/*img1_binding*/ ctx[7](img1);
+    			append_dev(section, img);
+    			/*img_binding*/ ctx[6](img);
     		},
-    		p: function update(ctx, [dirty]) {
-    			if (dirty & /*src*/ 4 && img1.src !== (img1_src_value = /*src*/ ctx[2])) {
-    				attr_dev(img1, "src", img1_src_value);
-    			}
-    		},
+    		p: noop,
     		i: noop,
     		o: noop,
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(section);
-    			/*img0_binding*/ ctx[6](null);
-    			/*img1_binding*/ ctx[7](null);
+    			/*img_binding*/ ctx[6](null);
     		}
     	};
 
@@ -650,7 +646,7 @@ var app = (function () {
     	let { scroll } = $$props, { isScrolling } = $$props;
 
     	//local vars bound to the two image elements
-    	let ladder, climber;
+    	let ladder, diver;
 
     	const writable_props = ["scroll", "isScrolling"];
 
@@ -658,58 +654,47 @@ var app = (function () {
     		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console_1.warn(`<Climb> was created with unknown prop '${key}'`);
     	});
 
-    	function img0_binding($$value) {
+    	function img_binding($$value) {
     		binding_callbacks[$$value ? "unshift" : "push"](() => {
     			$$invalidate(0, ladder = $$value);
     		});
     	}
 
-    	function img1_binding($$value) {
-    		binding_callbacks[$$value ? "unshift" : "push"](() => {
-    			$$invalidate(1, climber = $$value);
-    		});
-    	}
-
     	$$self.$set = $$props => {
-    		if ("scroll" in $$props) $$invalidate(3, scroll = $$props.scroll);
-    		if ("isScrolling" in $$props) $$invalidate(4, isScrolling = $$props.isScrolling);
+    		if ("scroll" in $$props) $$invalidate(1, scroll = $$props.scroll);
+    		if ("isScrolling" in $$props) $$invalidate(2, isScrolling = $$props.isScrolling);
     	};
 
     	$$self.$capture_state = () => {
-    		return {
-    			scroll,
-    			isScrolling,
-    			ladder,
-    			climber,
-    			src
-    		};
+    		return { scroll, isScrolling, ladder, diver, src };
     	};
 
     	$$self.$inject_state = $$props => {
-    		if ("scroll" in $$props) $$invalidate(3, scroll = $$props.scroll);
-    		if ("isScrolling" in $$props) $$invalidate(4, isScrolling = $$props.isScrolling);
+    		if ("scroll" in $$props) $$invalidate(1, scroll = $$props.scroll);
+    		if ("isScrolling" in $$props) $$invalidate(2, isScrolling = $$props.isScrolling);
     		if ("ladder" in $$props) $$invalidate(0, ladder = $$props.ladder);
-    		if ("climber" in $$props) $$invalidate(1, climber = $$props.climber);
-    		if ("src" in $$props) $$invalidate(2, src = $$props.src);
+    		if ("diver" in $$props) diver = $$props.diver;
+    		if ("src" in $$props) src = $$props.src;
     	};
 
     	let src;
 
     	$$self.$$.update = () => {
-    		if ($$self.$$.dirty & /*isScrolling*/ 16) {
+    		if ($$self.$$.dirty & /*isScrolling*/ 4) {
     			// a reactive var: src always checks whether isScrolling is true or false, and can thus be used to trigger shift between the images 
-    			 $$invalidate(2, src = isScrolling
+    			 src = isScrolling
     			? "./img/climber.gif"
-    			: "./img/climber_still.png");
+    			: "./img/climber_still.png";
     		}
 
-    		if ($$self.$$.dirty & /*ladder, climber, scroll*/ 11) {
+    		if ($$self.$$.dirty & /*ladder, scroll*/ 3) {
     			// an anonymous reactive variable checks the position of the two images and dispatches 'done', when the climber has reached a certain distance to the top of the latter (change 150 to something else to tweak)
     			 {
-    				if (ladder && climber) {
-    					$$invalidate(0, ladder.style.transform = `translateY(${scroll / 8}px)`, ladder);
+    				if (ladder) {
+    					$$invalidate(0, ladder.style.transform = `translateY(${scroll / 12}px)`, ladder);
 
-    					if (ladder.getBoundingClientRect().top - 150 > climber.getBoundingClientRect().top) {
+    					if (scroll >= 9274) {
+    						console.log("stige sin topp er nå: ", ladder.getBoundingClientRect().top);
     						console.log("ready to jump..");
     						dispatch("done");
     					}
@@ -718,22 +703,13 @@ var app = (function () {
     		}
     	};
 
-    	return [
-    		ladder,
-    		climber,
-    		src,
-    		scroll,
-    		isScrolling,
-    		dispatch,
-    		img0_binding,
-    		img1_binding
-    	];
+    	return [ladder, scroll, isScrolling, src, dispatch, diver, img_binding];
     }
 
     class Climb extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance, create_fragment, safe_not_equal, { scroll: 3, isScrolling: 4 });
+    		init(this, options, instance, create_fragment, safe_not_equal, { scroll: 1, isScrolling: 2 });
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
@@ -745,11 +721,11 @@ var app = (function () {
     		const { ctx } = this.$$;
     		const props = options.props || {};
 
-    		if (/*scroll*/ ctx[3] === undefined && !("scroll" in props)) {
+    		if (/*scroll*/ ctx[1] === undefined && !("scroll" in props)) {
     			console_1.warn("<Climb> was created without expected prop 'scroll'");
     		}
 
-    		if (/*isScrolling*/ ctx[4] === undefined && !("isScrolling" in props)) {
+    		if (/*isScrolling*/ ctx[2] === undefined && !("isScrolling" in props)) {
     			console_1.warn("<Climb> was created without expected prop 'isScrolling'");
     		}
     	}
@@ -781,133 +757,61 @@ var app = (function () {
         };
     }
 
-    /* src/components/Jump.svelte generated by Svelte v3.18.2 */
-
-    const { console: console_1$1 } = globals;
-    const file$1 = "src/components/Jump.svelte";
-
-    // (28:4) {#if manIsDangerouslyCloseToTheEnd}
-    function create_if_block(ctx) {
-    	let h4;
-    	let h4_transition;
-    	let current;
-
-    	const block = {
-    		c: function create() {
-    			h4 = element("h4");
-    			h4.textContent = "Oh, the man is getting close to the wall, you may wanna do something about that...";
-    			attr_dev(h4, "class", "svelte-fwyfi5");
-    			add_location(h4, file$1, 28, 8, 707);
-    		},
-    		m: function mount(target, anchor) {
-    			insert_dev(target, h4, anchor);
-    			current = true;
-    		},
-    		i: function intro(local) {
-    			if (current) return;
-
-    			add_render_callback(() => {
-    				if (!h4_transition) h4_transition = create_bidirectional_transition(h4, fade, {}, true);
-    				h4_transition.run(1);
-    			});
-
-    			current = true;
-    		},
-    		o: function outro(local) {
-    			if (!h4_transition) h4_transition = create_bidirectional_transition(h4, fade, {}, false);
-    			h4_transition.run(0);
-    			current = false;
-    		},
-    		d: function destroy(detaching) {
-    			if (detaching) detach_dev(h4);
-    			if (detaching && h4_transition) h4_transition.end();
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_if_block.name,
-    		type: "if",
-    		source: "(28:4) {#if manIsDangerouslyCloseToTheEnd}",
-    		ctx
-    	});
-
-    	return block;
-    }
+    /* src/components/Man.svelte generated by Svelte v3.18.2 */
+    const file$1 = "src/components/Man.svelte";
 
     function create_fragment$1(ctx) {
-    	let section;
-    	let h3;
-    	let t1;
-    	let t2;
+    	let div;
     	let img;
     	let img_src_value;
+    	let div_intro;
+    	let div_outro;
     	let current;
-    	let if_block = /*manIsDangerouslyCloseToTheEnd*/ ctx[1] && create_if_block(ctx);
 
     	const block = {
     		c: function create() {
-    			section = element("section");
-    			h3 = element("h3");
-    			h3.textContent = "scroll to jump →";
-    			t1 = space();
-    			if (if_block) if_block.c();
-    			t2 = space();
+    			div = element("div");
     			img = element("img");
-    			attr_dev(h3, "class", "svelte-fwyfi5");
-    			add_location(h3, file$1, 25, 4, 632);
-    			if (img.src !== (img_src_value = "./img/man.gif")) attr_dev(img, "src", img_src_value);
-    			attr_dev(img, "alt", "man");
-    			attr_dev(img, "class", "man svelte-fwyfi5");
-    			add_location(img, file$1, 31, 4, 830);
-    			add_location(section, file$1, 24, 0, 618);
+    			if (img.src !== (img_src_value = /*src*/ ctx[0])) attr_dev(img, "src", img_src_value);
+    			attr_dev(img, "class", "man svelte-1ooy380");
+    			attr_dev(img, "alt", "manny");
+    			add_location(img, file$1, 17, 4, 375);
+    			add_location(div, file$1, 16, 0, 348);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
     		},
     		m: function mount(target, anchor) {
-    			insert_dev(target, section, anchor);
-    			append_dev(section, h3);
-    			append_dev(section, t1);
-    			if (if_block) if_block.m(section, null);
-    			append_dev(section, t2);
-    			append_dev(section, img);
-    			/*img_binding*/ ctx[5](img);
+    			insert_dev(target, div, anchor);
+    			append_dev(div, img);
+    			/*img_binding*/ ctx[4](img);
     			current = true;
     		},
     		p: function update(ctx, [dirty]) {
-    			if (/*manIsDangerouslyCloseToTheEnd*/ ctx[1]) {
-    				if (!if_block) {
-    					if_block = create_if_block(ctx);
-    					if_block.c();
-    					transition_in(if_block, 1);
-    					if_block.m(section, t2);
-    				} else {
-    					transition_in(if_block, 1);
-    				}
-    			} else if (if_block) {
-    				group_outros();
-
-    				transition_out(if_block, 1, 1, () => {
-    					if_block = null;
-    				});
-
-    				check_outros();
+    			if (!current || dirty & /*src*/ 1 && img.src !== (img_src_value = /*src*/ ctx[0])) {
+    				attr_dev(img, "src", img_src_value);
     			}
     		},
     		i: function intro(local) {
     			if (current) return;
-    			transition_in(if_block);
+
+    			add_render_callback(() => {
+    				if (div_outro) div_outro.end(1);
+    				if (!div_intro) div_intro = create_in_transition(div, fade, {});
+    				div_intro.start();
+    			});
+
     			current = true;
     		},
     		o: function outro(local) {
-    			transition_out(if_block);
+    			if (div_intro) div_intro.invalidate();
+    			div_outro = create_out_transition(div, fade, {});
     			current = false;
     		},
     		d: function destroy(detaching) {
-    			if (detaching) detach_dev(section);
-    			if (if_block) if_block.d();
-    			/*img_binding*/ ctx[5](null);
+    			if (detaching) detach_dev(div);
+    			/*img_binding*/ ctx[4](null);
+    			if (detaching && div_outro) div_outro.end();
     		}
     	};
 
@@ -923,70 +827,62 @@ var app = (function () {
     }
 
     function instance$1($$self, $$props, $$invalidate) {
-    	const dispatch = createEventDispatcher();
-    	let { scroll } = $$props, { width } = $$props;
-    	let man, manIsDangerouslyCloseToTheEnd = false;
-    	const writable_props = ["scroll", "width"];
+    	let { src } = $$props, { moveUp } = $$props, { moveForward } = $$props;
+    	let man;
+    	const writable_props = ["src", "moveUp", "moveForward"];
 
     	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console_1$1.warn(`<Jump> was created with unknown prop '${key}'`);
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<Man> was created with unknown prop '${key}'`);
     	});
 
     	function img_binding($$value) {
     		binding_callbacks[$$value ? "unshift" : "push"](() => {
-    			$$invalidate(0, man = $$value);
+    			$$invalidate(1, man = $$value);
     		});
     	}
 
     	$$self.$set = $$props => {
-    		if ("scroll" in $$props) $$invalidate(2, scroll = $$props.scroll);
-    		if ("width" in $$props) $$invalidate(3, width = $$props.width);
+    		if ("src" in $$props) $$invalidate(0, src = $$props.src);
+    		if ("moveUp" in $$props) $$invalidate(2, moveUp = $$props.moveUp);
+    		if ("moveForward" in $$props) $$invalidate(3, moveForward = $$props.moveForward);
     	};
 
     	$$self.$capture_state = () => {
-    		return {
-    			scroll,
-    			width,
-    			man,
-    			manIsDangerouslyCloseToTheEnd
-    		};
+    		return { src, moveUp, moveForward, man };
     	};
 
     	$$self.$inject_state = $$props => {
-    		if ("scroll" in $$props) $$invalidate(2, scroll = $$props.scroll);
-    		if ("width" in $$props) $$invalidate(3, width = $$props.width);
-    		if ("man" in $$props) $$invalidate(0, man = $$props.man);
-    		if ("manIsDangerouslyCloseToTheEnd" in $$props) $$invalidate(1, manIsDangerouslyCloseToTheEnd = $$props.manIsDangerouslyCloseToTheEnd);
+    		if ("src" in $$props) $$invalidate(0, src = $$props.src);
+    		if ("moveUp" in $$props) $$invalidate(2, moveUp = $$props.moveUp);
+    		if ("moveForward" in $$props) $$invalidate(3, moveForward = $$props.moveForward);
+    		if ("man" in $$props) $$invalidate(1, man = $$props.man);
     	};
 
     	$$self.$$.update = () => {
-    		if ($$self.$$.dirty & /*man, scroll, width*/ 13) {
+    		if ($$self.$$.dirty & /*moveUp, man, moveForward*/ 14) {
     			 {
-    				if (man) {
-    					$$invalidate(0, man.style.transform = `translateX(${scroll / 6}px)`, man);
-    					console.log(man.getBoundingClientRect().right, width);
+    				if (moveUp && man) {
+    					$$invalidate(1, man.style.transform = `translateY(${moveUp}px)`, man);
+    				}
 
-    					if (man.getBoundingClientRect().right > width) {
-    						$$invalidate(1, manIsDangerouslyCloseToTheEnd = true);
-    					} else {
-    						$$invalidate(1, manIsDangerouslyCloseToTheEnd = false);
-    					}
+    				if (moveForward && man) {
+    					$$invalidate(1, man.style.transform = `translateX(${moveForward}px)`, man);
     				}
     			}
     		}
     	};
 
-    	return [man, manIsDangerouslyCloseToTheEnd, scroll, width, dispatch, img_binding];
+    	return [src, man, moveUp, moveForward, img_binding];
     }
 
-    class Jump extends SvelteComponentDev {
+    class Man extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$1, create_fragment$1, safe_not_equal, { scroll: 2, width: 3 });
+    		init(this, options, instance$1, create_fragment$1, safe_not_equal, { src: 0, moveUp: 2, moveForward: 3 });
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
-    			tagName: "Jump",
+    			tagName: "Man",
     			options,
     			id: create_fragment$1.name
     		});
@@ -994,12 +890,578 @@ var app = (function () {
     		const { ctx } = this.$$;
     		const props = options.props || {};
 
-    		if (/*scroll*/ ctx[2] === undefined && !("scroll" in props)) {
-    			console_1$1.warn("<Jump> was created without expected prop 'scroll'");
+    		if (/*src*/ ctx[0] === undefined && !("src" in props)) {
+    			console.warn("<Man> was created without expected prop 'src'");
     		}
 
-    		if (/*width*/ ctx[3] === undefined && !("width" in props)) {
-    			console_1$1.warn("<Jump> was created without expected prop 'width'");
+    		if (/*moveUp*/ ctx[2] === undefined && !("moveUp" in props)) {
+    			console.warn("<Man> was created without expected prop 'moveUp'");
+    		}
+
+    		if (/*moveForward*/ ctx[3] === undefined && !("moveForward" in props)) {
+    			console.warn("<Man> was created without expected prop 'moveForward'");
+    		}
+    	}
+
+    	get src() {
+    		throw new Error("<Man>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set src(value) {
+    		throw new Error("<Man>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get moveUp() {
+    		throw new Error("<Man>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set moveUp(value) {
+    		throw new Error("<Man>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get moveForward() {
+    		throw new Error("<Man>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set moveForward(value) {
+    		throw new Error("<Man>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+    }
+
+    /* src/components/Jump.svelte generated by Svelte v3.18.2 */
+    const file$2 = "src/components/Jump.svelte";
+
+    // (33:4) {:else}
+    function create_else_block(ctx) {
+    	let current;
+
+    	const man_1 = new Man({
+    			props: { src: "./img/2.png" },
+    			$$inline: true
+    		});
+
+    	const block = {
+    		c: function create() {
+    			create_component(man_1.$$.fragment);
+    		},
+    		m: function mount(target, anchor) {
+    			mount_component(man_1, target, anchor);
+    			current = true;
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(man_1.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(man_1.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			destroy_component(man_1, detaching);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_else_block.name,
+    		type: "else",
+    		source: "(33:4) {:else}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (31:46) 
+    function create_if_block_6(ctx) {
+    	let current;
+
+    	const man_1 = new Man({
+    			props: { src: "./img/8.png", moveForward: "-130" },
+    			$$inline: true
+    		});
+
+    	const block = {
+    		c: function create() {
+    			create_component(man_1.$$.fragment);
+    		},
+    		m: function mount(target, anchor) {
+    			mount_component(man_1, target, anchor);
+    			current = true;
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(man_1.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(man_1.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			destroy_component(man_1, detaching);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block_6.name,
+    		type: "if",
+    		source: "(31:46) ",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (29:46) 
+    function create_if_block_5(ctx) {
+    	let current;
+
+    	const man_1 = new Man({
+    			props: {
+    				src: "./img/7.png",
+    				moveUp: "200",
+    				moveForward: "-200",
+    				class: "seven"
+    			},
+    			$$inline: true
+    		});
+
+    	const block = {
+    		c: function create() {
+    			create_component(man_1.$$.fragment);
+    		},
+    		m: function mount(target, anchor) {
+    			mount_component(man_1, target, anchor);
+    			current = true;
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(man_1.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(man_1.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			destroy_component(man_1, detaching);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block_5.name,
+    		type: "if",
+    		source: "(29:46) ",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (27:46) 
+    function create_if_block_4(ctx) {
+    	let current;
+
+    	const man_1 = new Man({
+    			props: { src: "./img/6.png", moveForward: "-230" },
+    			$$inline: true
+    		});
+
+    	const block = {
+    		c: function create() {
+    			create_component(man_1.$$.fragment);
+    		},
+    		m: function mount(target, anchor) {
+    			mount_component(man_1, target, anchor);
+    			current = true;
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(man_1.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(man_1.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			destroy_component(man_1, detaching);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block_4.name,
+    		type: "if",
+    		source: "(27:46) ",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (25:46) 
+    function create_if_block_3(ctx) {
+    	let current;
+
+    	const man_1 = new Man({
+    			props: { src: "./img/5.png", moveForward: "-130" },
+    			$$inline: true
+    		});
+
+    	const block = {
+    		c: function create() {
+    			create_component(man_1.$$.fragment);
+    		},
+    		m: function mount(target, anchor) {
+    			mount_component(man_1, target, anchor);
+    			current = true;
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(man_1.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(man_1.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			destroy_component(man_1, detaching);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block_3.name,
+    		type: "if",
+    		source: "(25:46) ",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (23:46) 
+    function create_if_block_2(ctx) {
+    	let current;
+
+    	const man_1 = new Man({
+    			props: { src: "./img/4.png", moveForward: "-130" },
+    			$$inline: true
+    		});
+
+    	const block = {
+    		c: function create() {
+    			create_component(man_1.$$.fragment);
+    		},
+    		m: function mount(target, anchor) {
+    			mount_component(man_1, target, anchor);
+    			current = true;
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(man_1.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(man_1.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			destroy_component(man_1, detaching);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block_2.name,
+    		type: "if",
+    		source: "(23:46) ",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (21:47) 
+    function create_if_block_1(ctx) {
+    	let current;
+
+    	const man_1 = new Man({
+    			props: { src: "./img/3.png", moveForward: "-100" },
+    			$$inline: true
+    		});
+
+    	const block = {
+    		c: function create() {
+    			create_component(man_1.$$.fragment);
+    		},
+    		m: function mount(target, anchor) {
+    			mount_component(man_1, target, anchor);
+    			current = true;
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(man_1.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(man_1.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			destroy_component(man_1, detaching);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block_1.name,
+    		type: "if",
+    		source: "(21:47) ",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (19:4) {#if scroll <= 1000}
+    function create_if_block(ctx) {
+    	let current;
+
+    	const man_1 = new Man({
+    			props: { src: "./img/1.png", moveUp: "100" },
+    			$$inline: true
+    		});
+
+    	const block = {
+    		c: function create() {
+    			create_component(man_1.$$.fragment);
+    		},
+    		m: function mount(target, anchor) {
+    			mount_component(man_1, target, anchor);
+    			current = true;
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(man_1.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(man_1.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			destroy_component(man_1, detaching);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block.name,
+    		type: "if",
+    		source: "(19:4) {#if scroll <= 1000}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function create_fragment$2(ctx) {
+    	let section;
+    	let h3;
+    	let t1;
+    	let current_block_type_index;
+    	let if_block;
+    	let t2;
+    	let img;
+    	let img_src_value;
+    	let current;
+
+    	const if_block_creators = [
+    		create_if_block,
+    		create_if_block_1,
+    		create_if_block_2,
+    		create_if_block_3,
+    		create_if_block_4,
+    		create_if_block_5,
+    		create_if_block_6,
+    		create_else_block
+    	];
+
+    	const if_blocks = [];
+
+    	function select_block_type(ctx, dirty) {
+    		if (/*scroll*/ ctx[0] <= 1000) return 0;
+    		if (/*scroll*/ ctx[0] >= 1501 && /*scroll*/ ctx[0] <= 2000) return 1;
+    		if (/*scroll*/ ctx[0] >= 2001 && /*scroll*/ ctx[0] <= 2500) return 2;
+    		if (/*scroll*/ ctx[0] >= 2501 && /*scroll*/ ctx[0] <= 2800) return 3;
+    		if (/*scroll*/ ctx[0] >= 3001 && /*scroll*/ ctx[0] <= 3200) return 4;
+    		if (/*scroll*/ ctx[0] >= 3501 && /*scroll*/ ctx[0] <= 3800) return 5;
+    		if (/*scroll*/ ctx[0] >= 4001 && /*scroll*/ ctx[0] <= 4200) return 6;
+    		return 7;
+    	}
+
+    	current_block_type_index = select_block_type(ctx);
+    	if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
+
+    	const block = {
+    		c: function create() {
+    			section = element("section");
+    			h3 = element("h3");
+    			h3.textContent = "scroll to jump →";
+    			t1 = space();
+    			if_block.c();
+    			t2 = space();
+    			img = element("img");
+    			attr_dev(h3, "class", "svelte-13t1hdw");
+    			add_location(h3, file$2, 16, 4, 272);
+    			if (img.src !== (img_src_value = "./img/stige.png")) attr_dev(img, "src", img_src_value);
+    			attr_dev(img, "class", "stige svelte-13t1hdw");
+    			attr_dev(img, "alt", "title");
+    			add_location(img, file$2, 35, 4, 1058);
+    			add_location(section, file$2, 15, 0, 258);
+    		},
+    		l: function claim(nodes) {
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, section, anchor);
+    			append_dev(section, h3);
+    			append_dev(section, t1);
+    			if_blocks[current_block_type_index].m(section, null);
+    			append_dev(section, t2);
+    			append_dev(section, img);
+    			/*img_binding*/ ctx[6](img);
+    			current = true;
+    		},
+    		p: function update(ctx, [dirty]) {
+    			let previous_block_index = current_block_type_index;
+    			current_block_type_index = select_block_type(ctx);
+
+    			if (current_block_type_index !== previous_block_index) {
+    				group_outros();
+
+    				transition_out(if_blocks[previous_block_index], 1, 1, () => {
+    					if_blocks[previous_block_index] = null;
+    				});
+
+    				check_outros();
+    				if_block = if_blocks[current_block_type_index];
+
+    				if (!if_block) {
+    					if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
+    					if_block.c();
+    				}
+
+    				transition_in(if_block, 1);
+    				if_block.m(section, t2);
+    			}
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(if_block);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(if_block);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(section);
+    			if_blocks[current_block_type_index].d();
+    			/*img_binding*/ ctx[6](null);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_fragment$2.name,
+    		type: "component",
+    		source: "",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function instance$2($$self, $$props, $$invalidate) {
+    	const dispatch = createEventDispatcher();
+    	let { scroll } = $$props, { width } = $$props;
+    	let man, manIsDangerouslyCloseToTheEnd = false;
+    	let ladder;
+    	const writable_props = ["scroll", "width"];
+
+    	Object.keys($$props).forEach(key => {
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<Jump> was created with unknown prop '${key}'`);
+    	});
+
+    	function img_binding($$value) {
+    		binding_callbacks[$$value ? "unshift" : "push"](() => {
+    			$$invalidate(1, ladder = $$value);
+    		});
+    	}
+
+    	$$self.$set = $$props => {
+    		if ("scroll" in $$props) $$invalidate(0, scroll = $$props.scroll);
+    		if ("width" in $$props) $$invalidate(2, width = $$props.width);
+    	};
+
+    	$$self.$capture_state = () => {
+    		return {
+    			scroll,
+    			width,
+    			man,
+    			manIsDangerouslyCloseToTheEnd,
+    			ladder
+    		};
+    	};
+
+    	$$self.$inject_state = $$props => {
+    		if ("scroll" in $$props) $$invalidate(0, scroll = $$props.scroll);
+    		if ("width" in $$props) $$invalidate(2, width = $$props.width);
+    		if ("man" in $$props) man = $$props.man;
+    		if ("manIsDangerouslyCloseToTheEnd" in $$props) manIsDangerouslyCloseToTheEnd = $$props.manIsDangerouslyCloseToTheEnd;
+    		if ("ladder" in $$props) $$invalidate(1, ladder = $$props.ladder);
+    	};
+
+    	return [
+    		scroll,
+    		ladder,
+    		width,
+    		dispatch,
+    		man,
+    		manIsDangerouslyCloseToTheEnd,
+    		img_binding
+    	];
+    }
+
+    class Jump extends SvelteComponentDev {
+    	constructor(options) {
+    		super(options);
+    		init(this, options, instance$2, create_fragment$2, safe_not_equal, { scroll: 0, width: 2 });
+
+    		dispatch_dev("SvelteRegisterComponent", {
+    			component: this,
+    			tagName: "Jump",
+    			options,
+    			id: create_fragment$2.name
+    		});
+
+    		const { ctx } = this.$$;
+    		const props = options.props || {};
+
+    		if (/*scroll*/ ctx[0] === undefined && !("scroll" in props)) {
+    			console.warn("<Jump> was created without expected prop 'scroll'");
+    		}
+
+    		if (/*width*/ ctx[2] === undefined && !("width" in props)) {
+    			console.warn("<Jump> was created without expected prop 'width'");
     		}
     	}
 
@@ -1022,63 +1484,7 @@ var app = (function () {
 
     /* src/components/Fall.svelte generated by Svelte v3.18.2 */
 
-    const file$2 = "src/components/Fall.svelte";
-
-    function create_fragment$2(ctx) {
-    	let section;
-    	let h1;
-
-    	const block = {
-    		c: function create() {
-    			section = element("section");
-    			h1 = element("h1");
-    			h1.textContent = "Fall";
-    			add_location(h1, file$2, 3, 4, 16);
-    			add_location(section, file$2, 2, 0, 2);
-    		},
-    		l: function claim(nodes) {
-    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
-    		},
-    		m: function mount(target, anchor) {
-    			insert_dev(target, section, anchor);
-    			append_dev(section, h1);
-    		},
-    		p: noop,
-    		i: noop,
-    		o: noop,
-    		d: function destroy(detaching) {
-    			if (detaching) detach_dev(section);
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_fragment$2.name,
-    		type: "component",
-    		source: "",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    class Fall extends SvelteComponentDev {
-    	constructor(options) {
-    		super(options);
-    		init(this, options, null, create_fragment$2, safe_not_equal, {});
-
-    		dispatch_dev("SvelteRegisterComponent", {
-    			component: this,
-    			tagName: "Fall",
-    			options,
-    			id: create_fragment$2.name
-    		});
-    	}
-    }
-
-    /* src/components/Swim.svelte generated by Svelte v3.18.2 */
-
-    const file$3 = "src/components/Swim.svelte";
+    const file$3 = "src/components/Fall.svelte";
 
     function create_fragment$3(ctx) {
     	let section;
@@ -1088,7 +1494,7 @@ var app = (function () {
     		c: function create() {
     			section = element("section");
     			h1 = element("h1");
-    			h1.textContent = "Swim";
+    			h1.textContent = "Fall";
     			add_location(h1, file$3, 3, 4, 16);
     			add_location(section, file$3, 2, 0, 2);
     		},
@@ -1118,16 +1524,72 @@ var app = (function () {
     	return block;
     }
 
-    class Swim extends SvelteComponentDev {
+    class Fall extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
     		init(this, options, null, create_fragment$3, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
-    			tagName: "Swim",
+    			tagName: "Fall",
     			options,
     			id: create_fragment$3.name
+    		});
+    	}
+    }
+
+    /* src/components/Swim.svelte generated by Svelte v3.18.2 */
+
+    const file$4 = "src/components/Swim.svelte";
+
+    function create_fragment$4(ctx) {
+    	let section;
+    	let h1;
+
+    	const block = {
+    		c: function create() {
+    			section = element("section");
+    			h1 = element("h1");
+    			h1.textContent = "Swim";
+    			add_location(h1, file$4, 3, 4, 16);
+    			add_location(section, file$4, 2, 0, 2);
+    		},
+    		l: function claim(nodes) {
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, section, anchor);
+    			append_dev(section, h1);
+    		},
+    		p: noop,
+    		i: noop,
+    		o: noop,
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(section);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_fragment$4.name,
+    		type: "component",
+    		source: "",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    class Swim extends SvelteComponentDev {
+    	constructor(options) {
+    		super(options);
+    		init(this, options, null, create_fragment$4, safe_not_equal, {});
+
+    		dispatch_dev("SvelteRegisterComponent", {
+    			component: this,
+    			tagName: "Swim",
+    			options,
+    			id: create_fragment$4.name
     		});
     	}
     }
@@ -1168,10 +1630,10 @@ var app = (function () {
     /* src/App.svelte generated by Svelte v3.18.2 */
 
     const { window: window_1 } = globals;
-    const file$4 = "src/App.svelte";
+    const file$5 = "src/App.svelte";
 
     // (64:27) 
-    function create_if_block_3(ctx) {
+    function create_if_block_3$1(ctx) {
     	let current;
 
     	const swim = new Swim({
@@ -1210,7 +1672,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_if_block_3.name,
+    		id: create_if_block_3$1.name,
     		type: "if",
     		source: "(64:27) ",
     		ctx
@@ -1220,7 +1682,7 @@ var app = (function () {
     }
 
     // (62:27) 
-    function create_if_block_2(ctx) {
+    function create_if_block_2$1(ctx) {
     	let current;
 
     	const fall = new Fall({
@@ -1259,7 +1721,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_if_block_2.name,
+    		id: create_if_block_2$1.name,
     		type: "if",
     		source: "(62:27) ",
     		ctx
@@ -1269,7 +1731,7 @@ var app = (function () {
     }
 
     // (60:27) 
-    function create_if_block_1(ctx) {
+    function create_if_block_1$1(ctx) {
     	let current;
 
     	const jump = new Jump({
@@ -1312,7 +1774,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_if_block_1.name,
+    		id: create_if_block_1$1.name,
     		type: "if",
     		source: "(60:27) ",
     		ctx
@@ -1374,7 +1836,7 @@ var app = (function () {
     	return block;
     }
 
-    function create_fragment$4(ctx) {
+    function create_fragment$5(ctx) {
     	let scrolling = false;
 
     	let clear_scrolling = () => {
@@ -1404,7 +1866,7 @@ var app = (function () {
     	let dispose;
     	add_render_callback(/*onwindowscroll*/ ctx[9]);
     	add_render_callback(/*onwindowresize*/ ctx[10]);
-    	const if_block_creators = [create_if_block$1, create_if_block_1, create_if_block_2, create_if_block_3];
+    	const if_block_creators = [create_if_block$1, create_if_block_1$1, create_if_block_2$1, create_if_block_3$1];
     	const if_blocks = [];
 
     	function select_block_type(ctx, dirty) {
@@ -1439,16 +1901,16 @@ var app = (function () {
     			t7 = text(t7_value);
     			t8 = space();
     			if (if_block) if_block.c();
-    			add_location(span0, file$4, 48, 2, 1350);
-    			add_location(span1, file$4, 48, 20, 1368);
-    			add_location(span2, file$4, 49, 2, 1399);
-    			add_location(span3, file$4, 49, 24, 1421);
-    			add_location(span4, file$4, 50, 2, 1450);
-    			add_location(span5, file$4, 50, 20, 1468);
+    			add_location(span0, file$5, 48, 2, 1350);
+    			add_location(span1, file$5, 48, 20, 1368);
+    			add_location(span2, file$5, 49, 2, 1399);
+    			add_location(span3, file$5, 49, 24, 1421);
+    			add_location(span4, file$5, 50, 2, 1450);
+    			add_location(span5, file$5, 50, 20, 1468);
     			attr_dev(div, "class", "status svelte-on3dhk");
-    			add_location(div, file$4, 47, 1, 1327);
+    			add_location(div, file$5, 47, 1, 1327);
     			attr_dev(main, "class", "svelte-on3dhk");
-    			add_location(main, file$4, 45, 0, 1275);
+    			add_location(main, file$5, 45, 0, 1275);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -1552,7 +2014,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$4.name,
+    		id: create_fragment$5.name,
     		type: "component",
     		source: "",
     		ctx
@@ -1561,7 +2023,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$2($$self, $$props, $$invalidate) {
+    function instance$3($$self, $$props, $$invalidate) {
     	let scenes = ["climb", "jump", "fall", "swim"];
 
     	//current scene is..
@@ -1639,13 +2101,13 @@ var app = (function () {
     class App extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$2, create_fragment$4, safe_not_equal, {});
+    		init(this, options, instance$3, create_fragment$5, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "App",
     			options,
-    			id: create_fragment$4.name
+    			id: create_fragment$5.name
     		});
     	}
     }
