@@ -9,16 +9,17 @@
 
     let man, manIsDangerouslyCloseToTheEnd = false
 
-    let ladder, land
+    let ladder
+    let land
 
 </script>
 
 <section>
-    <h3>Jump</h3>
+    <h3>scroll to jump →</h3>
 
     {#if scroll <= 500}
         <Man src='./img/1.png' moveUp='100'/>
-        {:else if scroll >= 501 && scroll <= 550 }
+    {:else if scroll >= 501 && scroll <= 550 }
         <Man src='./img/2.png' />
     {:else if scroll >= 601 && scroll <= 701}
         <Man src='./img/3.png' moveForward='-100' />
@@ -34,10 +35,10 @@
         <Man src='./img/8.png' moveUp='200' moveForward='-200' />
     {:else if scroll >= 2101 && scroll <= 2201}
         <Man src='./img/9.png' moveUp='200' moveForward='-200' />
-    
     {/if}
-    <img bind:this={land} src='./img/bkgr-land.jpg' class='land' alt='title' />
+
     <img bind:this={ladder} src='./img/stige.png' class='stige' alt='title' />
+    <img bind:this={land} src='./img/bkgr-land.jpg' alt='title' class='land' />
 
 </section>
 
@@ -56,17 +57,18 @@
         width:600px;
         top:200px;
         position:absolute;
-
     }
+   
 
-    .land {
-        background-size: cover;
+    .land{
         width: 100vw;
-        bottom:-550px;
-        overflow: scroll;
+        height: 100vh;
+        overflow-y: auto;
         position: relative;
         z-index: -2;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: contain;
     }
-    
 
 </style>

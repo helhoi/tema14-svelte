@@ -82,7 +82,7 @@ const changeScene = nr => {
         color:white;
     }
 	main{
-		min-height:10000px;
+		min-height:5000px;
 		overflow:scroll;
 	}
 	:global(section){

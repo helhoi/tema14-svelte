@@ -1,7 +1,7 @@
-@import url('https://fonts.googleapis.com/css?family=Open+Sans&display=swap');.status.svelte-on3dhk{position:fixed;left:2rem;top:2rem;background:rgba(0,0,0,.5);border-radius:1rem;display:grid;grid-template-columns:1fr 1fr;gap:0 1rem;padding:1rem;color:white}main.svelte-on3dhk{min-height:10000px;overflow:scroll}section{position:fixed;top:0;left:0;width:100vw;height:100vh;display:grid;place-items:center;color:gray;font-weight:300}html, body{font-family:'Open Sans';margin:0;padding:0}*{box-sizing:border-box}
+@import url('https://fonts.googleapis.com/css?family=Open+Sans&display=swap');.status.svelte-svmqg0{position:fixed;left:2rem;top:2rem;background:rgba(0,0,0,.5);border-radius:1rem;display:grid;grid-template-columns:1fr 1fr;gap:0 1rem;padding:1rem;color:white}main.svelte-svmqg0{min-height:5000px;overflow:scroll}section{position:fixed;top:0;left:0;width:100vw;height:100vh;display:grid;place-items:center;color:gray;font-weight:300}html, body{font-family:'Open Sans';margin:0;padding:0}*{box-sizing:border-box}
 h3.svelte-1m9bzme{position:absolute;bottom:4rem}.stige.svelte-1m9bzme{width:600px;position:absolute}
-h3.svelte-1s33lwo{position:absolute;bottom:4rem}.stige.svelte-1s33lwo{width:600px;top:200px;position:absolute}.land.svelte-1s33lwo{background-size:cover;width:100vw;bottom:-550px;overflow:scroll;position:relative;z-index:-2}
-.man.svelte-1ooy380{width:300px;top:123px;position:absolute}
-h3.svelte-wkh2lq{position:absolute;bottom:4rem}.stige.svelte-wkh2lq{width:600px;bottom:-450px;position:absolute;z-index:-1}.vann.svelte-wkh2lq{background-size:cover;width:100vw;bottom:-600px;overflow:scroll;position:relative;z-index:-2}
+h3.svelte-b3ase7{position:absolute;bottom:4rem}.stige.svelte-b3ase7{width:600px;top:200px;position:absolute}.land.svelte-b3ase7{width:100vw;height:100vh;overflow-y:auto;position:relative;z-index:-2;background-position:center;background-repeat:no-repeat;background-size:contain}
+.man.svelte-frg6md{width:300px;top:123px;position:fixed}
+.stige.svelte-ttxhjy{width:600px;top:-500px;position:fixed;z-index:-1;margin-left:25%}section.svelte-ttxhjy{min-width:90vw;height:7321px;overflow-y:auto;position:relative;z-index:-2;background-position:center;background-repeat:no-repeat;background-size:cover}.bkgr-water.svelte-ttxhjy{margin-top:0px;position:absolute;z-index:-3}body{height:auto}
 
 /*# sourceMappingURL=bundle.css.map */

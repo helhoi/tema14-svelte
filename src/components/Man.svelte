@@ -25,6 +25,6 @@
     .man{
         width:300px;
         top:123px;
-        position:absolute;
+        position:fixed;
     }
 </style>
