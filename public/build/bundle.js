@@ -936,7 +936,7 @@ var app = (function () {
     	let current;
 
     	const man_1 = new Man({
-    			props: { src: "./img/2.png" },
+    			props: { src: "./img/8.png", moveForward: "-130" },
     			$$inline: true
     		});
 
@@ -978,7 +978,12 @@ var app = (function () {
     	let current;
 
     	const man_1 = new Man({
-    			props: { src: "./img/8.png", moveForward: "-130" },
+    			props: {
+    				src: "./img/7.png",
+    				class: "seven",
+    				moveUp: "200",
+    				moveForward: "-200"
+    			},
     			$$inline: true
     		});
 
@@ -1020,12 +1025,7 @@ var app = (function () {
     	let current;
 
     	const man_1 = new Man({
-    			props: {
-    				src: "./img/7.png",
-    				moveUp: "200",
-    				moveForward: "-200",
-    				class: "seven"
-    			},
+    			props: { src: "./img/6.png", moveForward: "-230" },
     			$$inline: true
     		});
 
@@ -1067,7 +1067,7 @@ var app = (function () {
     	let current;
 
     	const man_1 = new Man({
-    			props: { src: "./img/6.png", moveForward: "-230" },
+    			props: { src: "./img/5.png", moveForward: "-130" },
     			$$inline: true
     		});
 
@@ -1109,7 +1109,7 @@ var app = (function () {
     	let current;
 
     	const man_1 = new Man({
-    			props: { src: "./img/5.png", moveForward: "-130" },
+    			props: { src: "./img/4.png", moveForward: "-130" },
     			$$inline: true
     		});
 
@@ -1146,50 +1146,8 @@ var app = (function () {
     	return block;
     }
 
-    // (23:46) 
+    // (23:47) 
     function create_if_block_2(ctx) {
-    	let current;
-
-    	const man_1 = new Man({
-    			props: { src: "./img/4.png", moveForward: "-130" },
-    			$$inline: true
-    		});
-
-    	const block = {
-    		c: function create() {
-    			create_component(man_1.$$.fragment);
-    		},
-    		m: function mount(target, anchor) {
-    			mount_component(man_1, target, anchor);
-    			current = true;
-    		},
-    		i: function intro(local) {
-    			if (current) return;
-    			transition_in(man_1.$$.fragment, local);
-    			current = true;
-    		},
-    		o: function outro(local) {
-    			transition_out(man_1.$$.fragment, local);
-    			current = false;
-    		},
-    		d: function destroy(detaching) {
-    			destroy_component(man_1, detaching);
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_if_block_2.name,
-    		type: "if",
-    		source: "(23:46) ",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    // (21:47) 
-    function create_if_block_1(ctx) {
     	let current;
 
     	const man_1 = new Man({
@@ -1221,9 +1179,51 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
+    		id: create_if_block_2.name,
+    		type: "if",
+    		source: "(23:47) ",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (21:52) 
+    function create_if_block_1(ctx) {
+    	let current;
+
+    	const man_1 = new Man({
+    			props: { src: "./img/2.png" },
+    			$$inline: true
+    		});
+
+    	const block = {
+    		c: function create() {
+    			create_component(man_1.$$.fragment);
+    		},
+    		m: function mount(target, anchor) {
+    			mount_component(man_1, target, anchor);
+    			current = true;
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(man_1.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(man_1.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			destroy_component(man_1, detaching);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
     		id: create_if_block_1.name,
     		type: "if",
-    		source: "(21:47) ",
+    		source: "(21:52) ",
     		ctx
     	});
 
@@ -1301,9 +1301,9 @@ var app = (function () {
     		if (/*scroll*/ ctx[0] >= 1501 && /*scroll*/ ctx[0] <= 2000) return 1;
     		if (/*scroll*/ ctx[0] >= 2001 && /*scroll*/ ctx[0] <= 2500) return 2;
     		if (/*scroll*/ ctx[0] >= 2501 && /*scroll*/ ctx[0] <= 2800) return 3;
-    		if (/*scroll*/ ctx[0] >= 3001 && /*scroll*/ ctx[0] <= 3200) return 4;
+    		if (/*scroll*/ ctx[0] >= 2001 && /*scroll*/ ctx[0] <= 3200) return 4;
     		if (/*scroll*/ ctx[0] >= 3501 && /*scroll*/ ctx[0] <= 3800) return 5;
-    		if (/*scroll*/ ctx[0] >= 4001 && /*scroll*/ ctx[0] <= 4200) return 6;
+    		if (/*scroll*/ ctx[0] >= 4000 && /*scroll*/ ctx[0] <= 4500) return 6;
     		return 7;
     	}
 
@@ -1324,7 +1324,7 @@ var app = (function () {
     			if (img.src !== (img_src_value = "./img/stige.png")) attr_dev(img, "src", img_src_value);
     			attr_dev(img, "class", "stige svelte-13t1hdw");
     			attr_dev(img, "alt", "title");
-    			add_location(img, file$2, 35, 4, 1058);
+    			add_location(img, file$2, 36, 4, 1070);
     			add_location(section, file$2, 15, 0, 258);
     		},
     		l: function claim(nodes) {
