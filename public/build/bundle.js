@@ -775,8 +775,8 @@ var app = (function () {
     			if (img.src !== (img_src_value = /*src*/ ctx[0])) attr_dev(img, "src", img_src_value);
     			attr_dev(img, "class", "man svelte-1ooy380");
     			attr_dev(img, "alt", "manny");
-    			add_location(img, file$1, 20, 4, 411);
-    			add_location(div, file$1, 19, 0, 384);
+    			add_location(img, file$1, 20, 4, 401);
+    			add_location(div, file$1, 19, 0, 374);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -784,7 +784,7 @@ var app = (function () {
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
     			append_dev(div, img);
-    			/*img_binding*/ ctx[5](img);
+    			/*img_binding*/ ctx[4](img);
     			current = true;
     		},
     		p: function update(ctx, [dirty]) {
@@ -810,7 +810,7 @@ var app = (function () {
     		},
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(div);
-    			/*img_binding*/ ctx[5](null);
+    			/*img_binding*/ ctx[4](null);
     			if (detaching && div_outro) div_outro.end();
     		}
     	};
@@ -828,7 +828,7 @@ var app = (function () {
 
     function instance$1($$self, $$props, $$invalidate) {
     	let { src } = $$props, { moveUp } = $$props, { moveForward } = $$props;
-    	let man, bakgrunn;
+    	let man;
     	const writable_props = ["src", "moveUp", "moveForward"];
 
     	Object.keys($$props).forEach(key => {
@@ -848,7 +848,7 @@ var app = (function () {
     	};
 
     	$$self.$capture_state = () => {
-    		return { src, moveUp, moveForward, man, bakgrunn };
+    		return { src, moveUp, moveForward, man };
     	};
 
     	$$self.$inject_state = $$props => {
@@ -856,7 +856,6 @@ var app = (function () {
     		if ("moveUp" in $$props) $$invalidate(2, moveUp = $$props.moveUp);
     		if ("moveForward" in $$props) $$invalidate(3, moveForward = $$props.moveForward);
     		if ("man" in $$props) $$invalidate(1, man = $$props.man);
-    		if ("bakgrunn" in $$props) bakgrunn = $$props.bakgrunn;
     	};
 
     	$$self.$$.update = () => {
@@ -877,7 +876,7 @@ var app = (function () {
     		}
     	};
 
-    	return [src, man, moveUp, moveForward, bakgrunn, img_binding];
+    	return [src, man, moveUp, moveForward, img_binding];
     }
 
     class Man extends SvelteComponentDev {
@@ -1333,8 +1332,11 @@ var app = (function () {
     	let current_block_type_index;
     	let if_block;
     	let t2;
-    	let img;
-    	let img_src_value;
+    	let img0;
+    	let img0_src_value;
+    	let t3;
+    	let img1;
+    	let img1_src_value;
     	let current;
 
     	const if_block_creators = [
@@ -1372,18 +1374,24 @@ var app = (function () {
     		c: function create() {
     			section = element("section");
     			h3 = element("h3");
-    			h3.textContent = "scroll to jump →";
+    			h3.textContent = "Jump";
     			t1 = space();
     			if (if_block) if_block.c();
     			t2 = space();
-    			img = element("img");
-    			attr_dev(h3, "class", "svelte-sed6d8");
-    			add_location(h3, file$2, 16, 4, 272);
-    			if (img.src !== (img_src_value = "./img/stige.png")) attr_dev(img, "src", img_src_value);
-    			attr_dev(img, "class", "stige svelte-sed6d8");
-    			attr_dev(img, "alt", "title");
-    			add_location(img, file$2, 39, 4, 1217);
-    			add_location(section, file$2, 15, 0, 258);
+    			img0 = element("img");
+    			t3 = space();
+    			img1 = element("img");
+    			attr_dev(h3, "class", "svelte-1s33lwo");
+    			add_location(h3, file$2, 16, 4, 278);
+    			if (img0.src !== (img0_src_value = "./img/bkgr-land.jpg")) attr_dev(img0, "src", img0_src_value);
+    			attr_dev(img0, "class", "land svelte-1s33lwo");
+    			attr_dev(img0, "alt", "title");
+    			add_location(img0, file$2, 38, 4, 1206);
+    			if (img1.src !== (img1_src_value = "./img/stige.png")) attr_dev(img1, "src", img1_src_value);
+    			attr_dev(img1, "class", "stige svelte-1s33lwo");
+    			attr_dev(img1, "alt", "title");
+    			add_location(img1, file$2, 39, 4, 1286);
+    			add_location(section, file$2, 15, 0, 264);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -1398,8 +1406,11 @@ var app = (function () {
     			}
 
     			append_dev(section, t2);
-    			append_dev(section, img);
-    			/*img_binding*/ ctx[6](img);
+    			append_dev(section, img0);
+    			/*img0_binding*/ ctx[7](img0);
+    			append_dev(section, t3);
+    			append_dev(section, img1);
+    			/*img1_binding*/ ctx[8](img1);
     			current = true;
     		},
     		p: function update(ctx, [dirty]) {
@@ -1448,7 +1459,8 @@ var app = (function () {
     				if_blocks[current_block_type_index].d();
     			}
 
-    			/*img_binding*/ ctx[6](null);
+    			/*img0_binding*/ ctx[7](null);
+    			/*img1_binding*/ ctx[8](null);
     		}
     	};
 
@@ -1467,14 +1479,20 @@ var app = (function () {
     	const dispatch = createEventDispatcher();
     	let { scroll } = $$props, { width } = $$props;
     	let man, manIsDangerouslyCloseToTheEnd = false;
-    	let ladder;
+    	let ladder, land;
     	const writable_props = ["scroll", "width"];
 
     	Object.keys($$props).forEach(key => {
     		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<Jump> was created with unknown prop '${key}'`);
     	});
 
-    	function img_binding($$value) {
+    	function img0_binding($$value) {
+    		binding_callbacks[$$value ? "unshift" : "push"](() => {
+    			$$invalidate(2, land = $$value);
+    		});
+    	}
+
+    	function img1_binding($$value) {
     		binding_callbacks[$$value ? "unshift" : "push"](() => {
     			$$invalidate(1, ladder = $$value);
     		});
@@ -1482,7 +1500,7 @@ var app = (function () {
 
     	$$self.$set = $$props => {
     		if ("scroll" in $$props) $$invalidate(0, scroll = $$props.scroll);
-    		if ("width" in $$props) $$invalidate(2, width = $$props.width);
+    		if ("width" in $$props) $$invalidate(3, width = $$props.width);
     	};
 
     	$$self.$capture_state = () => {
@@ -1491,33 +1509,37 @@ var app = (function () {
     			width,
     			man,
     			manIsDangerouslyCloseToTheEnd,
-    			ladder
+    			ladder,
+    			land
     		};
     	};
 
     	$$self.$inject_state = $$props => {
     		if ("scroll" in $$props) $$invalidate(0, scroll = $$props.scroll);
-    		if ("width" in $$props) $$invalidate(2, width = $$props.width);
+    		if ("width" in $$props) $$invalidate(3, width = $$props.width);
     		if ("man" in $$props) man = $$props.man;
     		if ("manIsDangerouslyCloseToTheEnd" in $$props) manIsDangerouslyCloseToTheEnd = $$props.manIsDangerouslyCloseToTheEnd;
     		if ("ladder" in $$props) $$invalidate(1, ladder = $$props.ladder);
+    		if ("land" in $$props) $$invalidate(2, land = $$props.land);
     	};
 
     	return [
     		scroll,
     		ladder,
+    		land,
     		width,
     		dispatch,
     		man,
     		manIsDangerouslyCloseToTheEnd,
-    		img_binding
+    		img0_binding,
+    		img1_binding
     	];
     }
 
     class Jump extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$2, create_fragment$2, safe_not_equal, { scroll: 0, width: 2 });
+    		init(this, options, instance$2, create_fragment$2, safe_not_equal, { scroll: 0, width: 3 });
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
@@ -1533,7 +1555,7 @@ var app = (function () {
     			console.warn("<Jump> was created without expected prop 'scroll'");
     		}
 
-    		if (/*width*/ ctx[2] === undefined && !("width" in props)) {
+    		if (/*width*/ ctx[3] === undefined && !("width" in props)) {
     			console.warn("<Jump> was created without expected prop 'width'");
     		}
     	}
@@ -1558,7 +1580,7 @@ var app = (function () {
     /* src/components/Fall.svelte generated by Svelte v3.18.2 */
     const file$3 = "src/components/Fall.svelte";
 
-    // (25:45) 
+    // (25:47) 
     function create_if_block_3$1(ctx) {
     	let current;
 
@@ -1596,14 +1618,14 @@ var app = (function () {
     		block,
     		id: create_if_block_3$1.name,
     		type: "if",
-    		source: "(25:45) ",
+    		source: "(25:47) ",
     		ctx
     	});
 
     	return block;
     }
 
-    // (23:45) 
+    // (23:46) 
     function create_if_block_2$1(ctx) {
     	let current;
 
@@ -1641,7 +1663,7 @@ var app = (function () {
     		block,
     		id: create_if_block_2$1.name,
     		type: "if",
-    		source: "(23:45) ",
+    		source: "(23:46) ",
     		ctx
     	});
 
@@ -1756,9 +1778,9 @@ var app = (function () {
 
     	function select_block_type(ctx, dirty) {
     		if (/*scroll*/ ctx[0] <= 500) return 0;
-    		if (/*scroll*/ ctx[0] >= 501 && /*scroll*/ ctx[0] <= 550) return 1;
-    		if (/*scroll*/ ctx[0] >= 601 && /*scroll*/ ctx[0] <= 701) return 2;
-    		if (/*scroll*/ ctx[0] >= 701 && /*scroll*/ ctx[0] <= 801) return 3;
+    		if (/*scroll*/ ctx[0] >= 601 && /*scroll*/ ctx[0] <= 801) return 1;
+    		if (/*scroll*/ ctx[0] >= 801 && /*scroll*/ ctx[0] <= 1001) return 2;
+    		if (/*scroll*/ ctx[0] >= 1001 && /*scroll*/ ctx[0] <= 1200) return 3;
     		return -1;
     	}
 
@@ -1777,16 +1799,16 @@ var app = (function () {
     			img0 = element("img");
     			t3 = space();
     			img1 = element("img");
-    			attr_dev(h3, "class", "svelte-zwohpf");
+    			attr_dev(h3, "class", "svelte-17i19lq");
     			add_location(h3, file$3, 16, 4, 278);
     			if (img0.src !== (img0_src_value = "./img/bkgr-vann.png")) attr_dev(img0, "src", img0_src_value);
-    			attr_dev(img0, "class", "vann svelte-zwohpf");
+    			attr_dev(img0, "class", "vann svelte-17i19lq");
     			attr_dev(img0, "alt", "title");
-    			add_location(img0, file$3, 29, 4, 706);
+    			add_location(img0, file$3, 29, 4, 709);
     			if (img1.src !== (img1_src_value = "./img/stige.png")) attr_dev(img1, "src", img1_src_value);
-    			attr_dev(img1, "class", "stige svelte-zwohpf");
+    			attr_dev(img1, "class", "stige svelte-17i19lq");
     			attr_dev(img1, "alt", "title");
-    			add_location(img1, file$3, 30, 4, 786);
+    			add_location(img1, file$3, 30, 4, 789);
     			add_location(section, file$3, 15, 0, 264);
     		},
     		l: function claim(nodes) {

@@ -9,12 +9,12 @@
 
     let man, manIsDangerouslyCloseToTheEnd = false
 
-    let ladder
+    let ladder, land
 
 </script>
 
 <section>
-    <h3>scroll to jump →</h3>
+    <h3>Jump</h3>
 
     {#if scroll <= 500}
         <Man src='./img/1.png' moveUp='100'/>
@@ -36,7 +36,7 @@
         <Man src='./img/9.png' moveUp='200' moveForward='-200' />
     
     {/if}
-    
+    <img bind:this={land} src='./img/bkgr-land.jpg' class='land' alt='title' />
     <img bind:this={ladder} src='./img/stige.png' class='stige' alt='title' />
 
 </section>
@@ -56,6 +56,16 @@
         width:600px;
         top:200px;
         position:absolute;
+
+    }
+
+    .land {
+        background-size: cover;
+        width: 100vw;
+        bottom:-550px;
+        overflow: scroll;
+        position: relative;
+        z-index: -2;
     }
     
 
