@@ -1,16 +1,19 @@
 <script>
     import { fade } from 'svelte/transition' 
     export let src, moveUp, moveForward
-    let man
+    let man, bakgrunn
 
     $: {        
-        if(moveUp && man){
-            man.style.transform = `translateY(${moveUp}px)`
-        }
         if(moveForward && man) {
             man.style.transform = `translateX(${moveForward}px)`
         }
     }
+
+     $: {        
+        if(moveUp && man){
+            man.style.transform = `translateY(${moveUp}px)`
+        }
+     }
 
 </script>
 

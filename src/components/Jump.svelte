@@ -16,24 +16,27 @@
 <section>
     <h3>scroll to jump →</h3>
 
-    {#if scroll <= 1000}
+    {#if scroll <= 500}
         <Man src='./img/1.png' moveUp='100'/>
-        {:else if scroll >= 1501 && scroll <= 2000 }
+        {:else if scroll >= 501 && scroll <= 550 }
         <Man src='./img/2.png' />
-    {:else if scroll >= 2001 && scroll <= 2500}
+    {:else if scroll >= 601 && scroll <= 701}
         <Man src='./img/3.png' moveForward='-100' />
-    {:else if scroll >= 2501 && scroll <=2800}
+    {:else if scroll >= 701 && scroll <= 801}
         <Man src='./img/4.png' moveForward='-130' />
-    {:else if scroll >= 2001 && scroll <=3200}
+    {:else if scroll >= 801 && scroll <= 901}
         <Man src='./img/5.png' moveForward='-130' />
-    {:else if scroll >= 3501 && scroll <=3800}
+    {:else if scroll >= 901 && scroll <= 1001}
         <Man src='./img/6.png' moveForward='-230' />
-    {:else if scroll >= 4000 && scroll <=4500}
-        <Man src='./img/7.png' class='seven' moveUp='200' moveForward='-200'  />
-    {:else}
-        <Man src='./img/8.png' moveForward='-130' />
+    {:else if scroll >= 1001 && scroll <= 1101}
+        <Man src='./img/7.png' moveUp='250' moveForward='-800' />
+    {:else if scroll >= 1101 && scroll <= 2101}
+        <Man src='./img/8.png' moveUp='200' moveForward='-200' />
+    {:else if scroll >= 2101 && scroll <= 2201}
+        <Man src='./img/9.png' moveUp='200' moveForward='-200' />
     
     {/if}
+    
     <img bind:this={ladder} src='./img/stige.png' class='stige' alt='title' />
 
 </section>
@@ -53,9 +56,6 @@
         width:600px;
         top:200px;
         position:absolute;
-    }
-    .seven {
-        bottom: 700px;
     }
     
 
