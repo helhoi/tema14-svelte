@@ -1799,16 +1799,16 @@ var app = (function () {
     			img0 = element("img");
     			t3 = space();
     			img1 = element("img");
-    			attr_dev(h3, "class", "svelte-17i19lq");
+    			attr_dev(h3, "class", "svelte-wkh2lq");
     			add_location(h3, file$3, 16, 4, 278);
     			if (img0.src !== (img0_src_value = "./img/bkgr-vann.png")) attr_dev(img0, "src", img0_src_value);
-    			attr_dev(img0, "class", "vann svelte-17i19lq");
+    			attr_dev(img0, "class", "vann svelte-wkh2lq");
     			attr_dev(img0, "alt", "title");
-    			add_location(img0, file$3, 29, 4, 709);
+    			add_location(img0, file$3, 29, 4, 710);
     			if (img1.src !== (img1_src_value = "./img/stige.png")) attr_dev(img1, "src", img1_src_value);
-    			attr_dev(img1, "class", "stige svelte-17i19lq");
+    			attr_dev(img1, "class", "stige svelte-wkh2lq");
     			attr_dev(img1, "alt", "title");
-    			add_location(img1, file$3, 30, 4, 789);
+    			add_location(img1, file$3, 30, 4, 790);
     			add_location(section, file$3, 15, 0, 264);
     		},
     		l: function claim(nodes) {

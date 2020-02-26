@@ -19,7 +19,7 @@
     {#if scroll <= 500}
         <Man src='./img/vann1.png' moveForward='-400'/>
         {:else if scroll >= 601 && scroll <= 801 }
-        <Man src='./img/vann2.png' moveForward='-400'/>
+        <Man src='./img/vann2.png' moveForward='-400' />
     {:else if scroll >= 801 && scroll <= 1001}
         <Man src='./img/vann3.png' moveForward='-400' />
     {:else if scroll >= 1001 && scroll <= 1200}
@@ -46,14 +46,14 @@
     .stige{
         width:600px;
         bottom:-450px;
-        position:absolute;
+        position: absolute;
         z-index: -1;
     }
 
     .vann {
         background-size: cover;
         width: 100vw;
-        bottom:-550px;
+        bottom:-600px;
         overflow: scroll;
         position: relative;
          z-index: -2;
