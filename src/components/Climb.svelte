@@ -28,7 +28,7 @@
 
 <section>
     <h3>scroll to climb..</h3>
-    <img bind:this={ladder} src='./img/stige.png' class='stige' alt='title' />
+    <img bind:this={ladder} src='./img/even/stige.png' class='stige' alt='title' />
 </section>
 
 
@@ -40,7 +40,7 @@
     }
     .stige{
         width:600px;
-        bottom: -850px;
+        bottom: -950px;
         position: absolute;
     }
 </style>

@@ -12,16 +12,13 @@
     let ladder
     let land
 
-
- $: {
-        if(ladder && land){
-            ladder.style.transform = `translateY(${scroll/8}px)`
-            land.style.transform = `translateY(${scroll/12}px)`
-            if(scroll >= 5000) {
-                console.log('stige sin topp er nå: ', ladder.getBoundingClientRect().top)
-                console.log('ready to jump..')
-                dispatch('done')
-            }
+    $: {
+        if(scroll > 2001){
+            ladder.style.transform = `translateY(-${(scroll-2001) *.6}px)`
+            land.style.transform = `translateY(-${scroll-2001}px)`
+        }
+        if(scroll > 5000){
+            ladder.style.opacity = (6000 - scroll) / 1000;
         }
     }
 
@@ -30,27 +27,40 @@
 <section>
 
     {#if scroll <= 500}
-        <Man src='./img/1.png' moveUp='100'/>
-    {:else if scroll >= 501 && scroll <= 550 }
-        <Man src='./img/2.png' />
-    {:else if scroll >= 601 && scroll <= 701}
-        <Man src='./img/3.png' moveForward='-100' />
-    {:else if scroll >= 701 && scroll <= 801}
-        <Man src='./img/4.png' moveForward='-130' />
-    {:else if scroll >= 801 && scroll <= 901}
-        <Man src='./img/5.png' moveForward='-130' />
-    {:else if scroll >= 901 && scroll <= 1001}
-        <Man src='./img/6.png' moveForward='-230' />
-    {:else if scroll >= 1001 && scroll <= 1101}
-        <Man src='./img/7.png' moveUp='250' moveForward='-400' />
-    {:else if scroll >= 1101 && scroll <= 2101}
-        <Man src='./img/8.png' moveUp='550' moveForward='-400' />
-    {:else if scroll >= 2101 && scroll <= 2201}
-        <Man src='./img/9.png' moveUp='850' moveForward='-400' />
+        <Man src='./img/even/1.png' moveUp='100'/>
+    {:else if scroll >= 500 && scroll <= 800}
+        <Man src='./img/even/2.png' />
+    {:else if scroll >= 801 && scroll <= 1000}
+        <Man src='./img/even/3.png' moveForward='-100' />
+    {:else if scroll >= 1001 && scroll <= 1300 }
+        <Man src='./img/even/4.png' moveForward='-130' moveUp='-25' />
+    {:else if scroll >= 1301 && scroll <= 1500 }
+        <Man src='./img/even/5.png' moveForward='-130' moveUp='-25'/>
+    {:else if scroll >= 1501 && scroll <= 1800}
+        <Man src='./img/even/6.png' moveForward='-230' moveUp='-25'/>
+    {:else if scroll >= 1801 && scroll <= 2000 }
+        <Man src='./img/even/7.png' moveUp='250' moveForward='-400' />
+    {:else if scroll >= 2001 && scroll <= 2300}
+        <Man src='./img/even/8.png' moveUp='250' moveForward='-400' />
+    {:else if scroll >= 2301 && scroll <= 2600 }
+        <Man src='./img/even/9.png' moveUp='250' moveForward='-400' />
+    {:else if scroll >= 2600 && scroll <= 3959 }
+        <Man src='./img/even/9.png' moveUp='250' moveForward='-400' />
+
+    {:else if scroll >= 3960 && scroll <= 4100}
+        <Man src='./img/even/vann1.png' moveUp='250' moveForward='-400' />
+    {:else if scroll >= 4001 && scroll <= 4300}
+        <Man src='./img/even/vann2.png' moveUp='250' moveForward='-400' />
+    {:else if scroll >= 4301 && scroll <= 4600 }
+        <Man src='./img/even/vann3.png' moveUp='250' moveForward='-400' />
+    {:else if scroll > 4601}
+        <Man scroll={scroll} src='./img/even/vann4.png' moveUp='250' moveForward='-400' />
+
+
     {/if}
 
-    <img bind:this={ladder} src='./img/stige.png' class='stige' alt='title' />
-    <img bind:this={land} src='./img/bkgr-land.jpg' alt='title' class='land' />
+    <img bind:this={ladder} src='./img/even/langstige.png' class='stige' alt='title' />
+    <img bind:this={land} src='./img/even/bakgrunn.png' alt='title' class='land' />
 
 </section>
 
@@ -66,17 +76,13 @@
         top:200px;
         position:absolute;
     }
-   
-
+    
     .land{
-        width: 100vw;
-        height: 100vh;
-        overflow-y: auto;
-        position: relative;
+        max-width: 100vw;
+        overflow: scroll;    
         z-index: -2;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: contain;
+        align-self:start;
+        object-position: 0 -1450px;
     }
 
 </style>

@@ -1,15 +1,18 @@
 <script>
 import Climb from './components/Climb.svelte'
 import Jump from './components/Jump.svelte'
-import Fall from './components/Fall.svelte'
-import Swim from './components/Swim.svelte'
+import KellyWorld from './components/KellyWorld.svelte'
+import KellyUnderwater from './components/KellyUnderwater.svelte'
 import { scrollStop } from './helpers/helpers.js'
 
+let warning = ''
+
+
 //add scenes here
-let scenes = ['climb', 'jump', 'fall', 'swim']
+let scenes = ['climb', 'jump', 'kellyworld', 'kellyunderwater']
 
 //current scene is..
-let sceneIndex = 0
+let sceneIndex = 1
 
 //window properties
 let y, x, h, w
@@ -50,7 +53,6 @@ const changeScene = nr => {
 		<span>scrolling</span><span>{isScrolling}</span>
 		<span>scene</span><span>{ scenes[sceneIndex] }</span>
 	</div>
-
 	<!-- 
 	depending on the current sceneIndex, show components 
 	note the on:done={changeScene} on each component - check Climb.svelte to see how it works 
@@ -60,16 +62,35 @@ const changeScene = nr => {
 	{:else if sceneIndex == 1}
 		<Jump scroll={y} 	on:done={changeScene} width={w}/>
 	{:else if sceneIndex == 2}
-		<Fall scroll = {y} 	on:done={changeScene}/>
+		<KellyWorld scroll={y} 	on:done={changeScene}/>
 	{:else if sceneIndex == 3}
-		<Swim scroll={y} 	on:done={changeScene}/>
+		<KellyUnderwater scroll={y} 	on:done={changeScene}/>
 	{/if}
 
 </main>
+	{#if w < 1100}
+		<div class='message'>
+			 <h1>Best viewed on desktop</h1>
+		</div>
+	{/if}
+
 
 <style>
+	
 	@import url('https://fonts.googleapis.com/css?family=Open+Sans&display=swap');
-    .status{
+    .message{
+		position:fixed;
+		top:0;
+		left:0;
+		width:100vw;
+		height:100vh;
+		display:grid;
+		place-items:center;
+		font-size: 50px;
+		text-align: center;
+		color: white;
+	}
+	.status{
         position:fixed;
         left:2rem;
         top:2rem;
@@ -81,9 +102,10 @@ const changeScene = nr => {
         padding:1rem;
         color:white;
 		z-index: 10;
+		display:none;
     }
 	main{
-		min-height:5000px;
+		min-height:9145px;
 		overflow:scroll;
 	}
 	:global(section){

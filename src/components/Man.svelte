@@ -1,6 +1,7 @@
 <script>
     import { fade } from 'svelte/transition' 
     export let src, moveUp, moveForward
+    export let scroll = 0
     let man
 
     $: {        
@@ -8,6 +9,10 @@
             moveForward = moveForward ? moveForward : 0
             moveUp = moveUp ? moveUp : 0
             man.style.transform = `translate(${moveForward}px, ${moveUp}px)`
+        }
+        if(scroll > 7000){
+            console.log(man.style.opacity)
+            man.style.opacity = (8000 - scroll) / 1000;
         }
     }
 
@@ -21,6 +26,6 @@
     .man{
         width:300px;
         top:123px;
-        position:fixed;
+        position:absolute;
     }
 </style>
