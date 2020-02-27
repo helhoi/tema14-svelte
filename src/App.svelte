@@ -80,6 +80,7 @@ const changeScene = nr => {
 		gap:0 1rem;
         padding:1rem;
         color:white;
+		z-index: 10;
     }
 	main{
 		min-height:5000px;

@@ -4,16 +4,12 @@
     let man
 
     $: {        
-        if(moveForward && man) {
-            man.style.transform = `translateX(${moveForward}px)`
+        if(man) {
+            moveForward = moveForward ? moveForward : 0
+            moveUp = moveUp ? moveUp : 0
+            man.style.transform = `translate(${moveForward}px, ${moveUp}px)`
         }
     }
-
-     $: {        
-        if(moveUp && man){
-            man.style.transform = `translateY(${moveUp}px)`
-        }
-     }
 
 </script>
 

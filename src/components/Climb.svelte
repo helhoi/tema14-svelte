@@ -16,7 +16,7 @@
     $: {
         if(ladder){
             ladder.style.transform = `translateY(${scroll/12}px)`
-            if(scroll >= 9274) {
+            if(scroll >= 4179) {
                 console.log('stige sin topp er nå: ', ladder.getBoundingClientRect().top)
                 console.log('ready to jump..')
                 dispatch('done')
@@ -40,9 +40,7 @@
     }
     .stige{
         width:600px;
-        position:absolute;
-    }
-    .diver{
-        width:150px;
+        bottom: -850px;
+        position: absolute;
     }
 </style>
