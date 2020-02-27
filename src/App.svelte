@@ -29,12 +29,15 @@ $: scrollStop( () => isScrolling = false )
 
 //change scene function - is called either on keypress or by the modules, whenever they dispatch 'done'
 const changeScene = nr => {
+	console.log("scene index ",sceneIndex)
 	//reset scroll
 	y = 0
 	window.scrollTo(0,0)
 	if(!isNaN(nr)){sceneIndex=nr;return}
-	sceneIndex = (sceneIndex == scenes.length ? 0 : sceneIndex + 1)
-} 
+	sceneIndex = sceneIndex == scenes.length ? 0 : parseInt(sceneIndex) + 1
+	console.log("scene index " + sceneIndex)
+}
+
 
 </script>
 
@@ -64,7 +67,7 @@ const changeScene = nr => {
 	{:else if sceneIndex == 2}
 		<KellyWorld scroll={y} 	on:done={changeScene}/>
 	{:else if sceneIndex == 3}
-		<KellyUnderwater scroll={y} 	on:done={changeScene}/>
+		<KellyUnderwater scroll={y}	on:done={changeScene}/>
 	{/if}
 
 </main>
@@ -102,12 +105,13 @@ const changeScene = nr => {
         padding:1rem;
         color:white;
 		z-index: 10;
-		display:none;
+		/* display:none; */
     }
 	main{
 		min-height:9145px;
 		overflow:scroll;
 	}
+
 	:global(section){
 		position:fixed;
         top:0;
