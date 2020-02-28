@@ -92,6 +92,7 @@ const changeScene = nr => {
 		font-size: 50px;
 		text-align: center;
 		color: white;
+		background-color: black;
 	}
 	.status{
         position:fixed;

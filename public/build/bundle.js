@@ -3182,7 +3182,7 @@ var app = (function () {
     			h1 = element("h1");
     			h1.textContent = "Best viewed on desktop";
     			add_location(h1, file$6, 75, 4, 2227);
-    			attr_dev(div, "class", "message svelte-ajy41g");
+    			attr_dev(div, "class", "message svelte-1ivvq9g");
     			add_location(div, file$6, 74, 2, 2201);
     		},
     		m: function mount(target, anchor) {
@@ -3283,9 +3283,9 @@ var app = (function () {
     			add_location(span3, file$6, 55, 24, 1581);
     			add_location(span4, file$6, 56, 2, 1610);
     			add_location(span5, file$6, 56, 20, 1628);
-    			attr_dev(div, "class", "status svelte-ajy41g");
+    			attr_dev(div, "class", "status svelte-1ivvq9g");
     			add_location(div, file$6, 53, 1, 1487);
-    			attr_dev(main, "class", "svelte-ajy41g");
+    			attr_dev(main, "class", "svelte-1ivvq9g");
     			add_location(main, file$6, 51, 0, 1435);
     		},
     		l: function claim(nodes) {
