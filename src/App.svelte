@@ -105,7 +105,7 @@ const changeScene = nr => {
         padding:1rem;
         color:white;
 		z-index: 10;
-		/* display:none; */
+		display:none;
     }
 	main{
 		min-height:9145px;
