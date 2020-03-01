@@ -4,13 +4,14 @@ import Jump from './components/even/Jump.svelte'
 import KellyWorld from './components/kelly/KellyWorld.svelte'
 import KellyUnderwater from './components/kelly/KellyUnderwater.svelte'
 import IngridJump from './components/ingridmarie/IngridJump.svelte'
+import Marthe from './components/marthe/Marthe.svelte'
 import { scrollStop } from './helpers/helpers.js'
 
 let warning = ''
 
 
 //add scenes here
-let scenes = ['climb', 'jump', 'kellyworld', 'kellyunderwater', 'ingridjump']
+let scenes = ['climb', 'jump', 'kellyworld', 'kellyunderwater', 'ingridjump', 'marthe']
 
 //current scene is..
 let sceneIndex = 1
@@ -71,6 +72,8 @@ const changeScene = nr => {
 		<KellyUnderwater scroll={y}	on:done={changeScene}/>
 	{:else if sceneIndex == 4}
 		<IngridJump scroll={y}	on:done={changeScene}/>
+	{:else if sceneIndex == 5}
+		<Marthe scroll={y}	on:done={changeScene}/>
 	{/if}
 
 </main>
@@ -109,7 +112,7 @@ const changeScene = nr => {
         padding:1rem;
         color:white;
 		z-index: 10;
-		/* display:none; */
+		display:none;
     }
 	main{
 		min-height:9145px;

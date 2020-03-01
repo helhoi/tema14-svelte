@@ -5,7 +5,7 @@
 
     const dispatch = createEventDispatcher()
 
-    export let scroll, width
+    export let scroll
 
     let manMarthe, manIsDangerouslyCloseToTheEnd = false
 
@@ -22,78 +22,84 @@
         }
     }
 
+    $: {
+        if(scroll >= 3265){
+            dispatch('done')
+        }
+    }
+
 </script>
 
 <section>
     <!--landing-->
     {#if scroll <= 100}
-        <ManMarthe src='./img/Marthe/Lande/lande1.png'  class='man-marthe' moveForward='44' />
+        <ManMarthe src='./img/marthe/Lande/lande1.png'  class='man-marthe' moveForward='44' />
     {:else if scroll >= 100 && scroll <= 200 }
-        <ManMarthe src='./img/Marthe/Lande/lande2.png' moveUp='50' moveForward='44'/>
+        <ManMarthe src='./img/marthe/Lande/lande2.png' moveUp='50' moveForward='44'/>
     {:else if scroll >= 201 && scroll <= 300}
-        <ManMarthe src='./img/Marthe/Lande/lande3.png' moveUp='-50'moveForward='44'/>
+        <ManMarthe src='./img/marthe/Lande/lande3.png' moveUp='-50'moveForward='44'/>
     {:else if scroll >= 301 && scroll <= 400}
-        <ManMarthe src='./img/Marthe/Lande/lande4.png' moveUp='-60' moveForward='44'/>
+        <ManMarthe src='./img/marthe/Lande/lande4.png' moveUp='-60' moveForward='44'/>
     {:else if scroll >= 401 && scroll <= 500}
-        <ManMarthe src='./img/Marthe/Stå/standing.png' moveUp='-55' moveForward='44' />
+        <ManMarthe src='./img/marthe/Stå/standing.png' moveUp='-55' moveForward='44' />
     
     <!--walking-->
     {:else if scroll >= 501 && scroll <= 600}
-        <ManMarthe src='./img/Marthe/Walk/walk1.png' moveUp='-60'moveForward='44'/>
+        <ManMarthe src='./img/marthe/Walk/walk1.png' moveUp='-60'moveForward='44'/>
     {:else if scroll >= 601 && scroll <= 700}
-        <ManMarthe src='./img/Marthe/Walk/walk2.png' moveUp='50' moveForward='50' />
+        <ManMarthe src='./img/marthe/Walk/walk2.png' moveUp='50' moveForward='50' />
     {:else if scroll >= 701 && scroll <= 800}
-        <ManMarthe src='./img/Marthe/Walk/walk3.png' moveUp='90' moveForward='50'/>
+        <ManMarthe src='./img/marthe/Walk/walk3.png' moveUp='90' moveForward='50'/>
     {:else if scroll >= 801 && scroll <= 1000}
-        <ManMarthe src='./img/Marthe/Walk/walk4.png' moveUp='20' moveForward='38'/>
+        <ManMarthe src='./img/marthe/Walk/walk4.png' moveUp='20' moveForward='38'/>
 
     <!--tripping-->
     {:else if scroll >= 1001 && scroll <= 1100}
-        <ManMarthe src='./img/Marthe/tripping/tripping1.png' moveUp='-50' moveForward='11'/>
+        <ManMarthe src='./img/marthe/tripping/tripping1.png' moveUp='-50' moveForward='11'/>
     {:else if scroll >= 1101 && scroll <= 1200}
-        <ManMarthe src='./img/Marthe/tripping/tripping2.png' moveUp='62' moveForward='-30'/>
+        <ManMarthe src='./img/marthe/tripping/tripping2.png' moveUp='62' moveForward='-30'/>
     {:else if scroll >= 1201 && scroll <= 1300}
-        <ManMarthe src='./img/Marthe/tripping/tripping3.png' moveUp='95' moveForward='-12'/>
+        <ManMarthe src='./img/marthe/tripping/tripping3.png' moveUp='95' moveForward='-12'/>
     {:else if scroll >= 1301 && scroll <= 1500}
-        <ManMarthe src='./img/Marthe/tripping/tripping4.png' moveUp='20' moveForward='-45'/>
+        <ManMarthe src='./img/marthe/tripping/tripping4.png' moveUp='20' moveForward='-45'/>
     {:else if scroll >= 1501 && scroll <= 1600}
-        <ManMarthe src='./img/Marthe/tripping/tripping5.png' moveUp='160' moveForward='-284'/>
+        <ManMarthe src='./img/marthe/tripping/tripping5.png' moveUp='160' moveForward='-284'/>
     {:else if scroll >= 1601 && scroll <= 1700}
-        <ManMarthe src='./img/Marthe/tripping/tripping6.png' moveUp='160' moveForward='-284'/>
+        <ManMarthe src='./img/marthe/tripping/tripping6.png' moveUp='160' moveForward='-284'/>
     {:else if scroll >= 1701 && scroll <= 1800}
-        <ManMarthe src='./img/Marthe/tripping/tripping7.png' moveUp='160' moveForward='-284'/>
+        <ManMarthe src='./img/marthe/tripping/tripping7.png' moveUp='160' moveForward='-284'/>
     {:else if scroll >= 1801 && scroll <= 1900}
-        <ManMarthe src='./img/Marthe/tripping/tripping8.png' moveUp='160' moveForward='-284'/>
+        <ManMarthe src='./img/marthe/tripping/tripping8.png' moveUp='160' moveForward='-284'/>
     {:else if scroll >= 1901 && scroll <= 2000}
-        <ManMarthe src='./img/Marthe/tripping/tripping9.png' moveUp='160' moveForward='-284'/>
+        <ManMarthe src='./img/marthe/tripping/tripping9.png' moveUp='160' moveForward='-284'/>
 
     <!--falling-->
     {:else if scroll >= 2001 && scroll <= 2100}
-        <ManMarthe src='./img/Marthe/falling/falling1.png' moveUp='160' moveForward='-284'/>
+        <ManMarthe src='./img/marthe/falling/falling1.png' moveUp='160' moveForward='-284'/>
     {:else if scroll >= 2101 && scroll <= 2200}
-        <ManMarthe src='./img/Marthe/falling/falling2.png' moveUp='160' moveForward='-284'/>
+        <ManMarthe src='./img/marthe/falling/falling2.png' moveUp='160' moveForward='-284'/>
     {:else if scroll >= 2201 && scroll <= 2300}
-        <ManMarthe src='./img/Marthe/falling/falling3.png' moveUp='160' moveForward='-284'/>
+        <ManMarthe src='./img/marthe/falling/falling3.png' moveUp='160' moveForward='-284'/>
 
     <!--splash-->
     {:else if scroll >= 2301 && scroll <= 2400}
-        <ManMarthe src='./img/Marthe/falling/falling1.png' moveUp='160' moveForward='-284'/>
-        <img src='./img/Marthe/splash/splash1.png' class='splash' alt='title' style='transform: translateX(-206px)' />
+        <ManMarthe src='./img/marthe/falling/falling1.png' moveUp='160' moveForward='-284'/>
+        <img src='./img/marthe/splash/splash1.png' class='splash' alt='title' style='transform: translateX(-206px)' />
     {:else if scroll >= 2401 && scroll <= 2500}
-        <ManMarthe src='./img/Marthe/falling/falling2.png' moveUp='160'moveForward='-284'/>
-        <img src='./img/Marthe/splash/splash2.png' class='splash' alt='title' style='transform: translateX(-206px)'/>
+        <ManMarthe src='./img/marthe/falling/falling2.png' moveUp='160'moveForward='-284'/>
+        <img src='./img/marthe/splash/splash2.png' class='splash' alt='title' style='transform: translateX(-206px)'/>
     {:else if scroll >= 2501 && scroll <= 2600}
-        <ManMarthe src='./img/Marthe/falling/falling3.png' moveUp='160'moveForward='-284'/>
-        <img src='./img/Marthe/splash/splash3.png' class='splash' alt='title' style='transform: translateX(-206px)' />
+        <ManMarthe src='./img/marthe/falling/falling3.png' moveUp='160'moveForward='-284'/>
+        <img src='./img/marthe/splash/splash3.png' class='splash' alt='title' style='transform: translateX(-206px)' />
 
     <!--underwater-->
     {:else if scroll >= 2601 && scroll <= 3211}
-        <ManMarthe src='./img/Marthe/underwater/underwater.png' moveUp='160' moveForward='-284' />
+        <ManMarthe src='./img/marthe/underwater/underwater.png' moveUp='160' moveForward='-284' />
     
     {/if}
 
-    <img bind:this={ladder} src='./img/Marthe/longestladder.png' class='ladder' alt='title' />
-    <img bind:this={land} src='./img/Marthe/background.png' class='land' alt='title' />
+    <img bind:this={ladder} src='./img/marthe/longestladder.png' class='ladder' alt='title' />
+    <img bind:this={land} src='./img/marthe/background.png' class='land' alt='title' />
 
 </section>
 
@@ -109,7 +115,7 @@
         margin-left: 25%;
     }
 
-   section{
+    section{
         min-width: 90vw;
         min-height: 4000px;
         overflow-y: auto;
@@ -118,9 +124,10 @@
         background-position: center;
         background-repeat: no-repeat;
         background-size: cover;
+        background-color: black;
     }
 
-     .land{
+    .land{
         top: 0px;
         position: absolute;
         z-index: 1;
