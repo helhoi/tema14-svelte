@@ -1,15 +1,16 @@
 <script>
-import Climb from './components/Climb.svelte'
-import Jump from './components/Jump.svelte'
-import KellyWorld from './components/KellyWorld.svelte'
-import KellyUnderwater from './components/KellyUnderwater.svelte'
+import Climb from './components/even/Climb.svelte'
+import Jump from './components/even/Jump.svelte'
+import KellyWorld from './components/kelly/KellyWorld.svelte'
+import KellyUnderwater from './components/kelly/KellyUnderwater.svelte'
+import IngridJump from './components/ingridmarie/IngridJump.svelte'
 import { scrollStop } from './helpers/helpers.js'
 
 let warning = ''
 
 
 //add scenes here
-let scenes = ['climb', 'jump', 'kellyworld', 'kellyunderwater']
+let scenes = ['climb', 'jump', 'kellyworld', 'kellyunderwater', 'ingridjump']
 
 //current scene is..
 let sceneIndex = 1
@@ -68,6 +69,8 @@ const changeScene = nr => {
 		<KellyWorld scroll={y} 	on:done={changeScene}/>
 	{:else if sceneIndex == 3}
 		<KellyUnderwater scroll={y}	on:done={changeScene}/>
+	{:else if sceneIndex == 4}
+		<IngridJump scroll={y}	on:done={changeScene}/>
 	{/if}
 
 </main>
@@ -106,7 +109,7 @@ const changeScene = nr => {
         padding:1rem;
         color:white;
 		z-index: 10;
-		display:none;
+		/* display:none; */
     }
 	main{
 		min-height:9145px;
