@@ -1,6 +1,6 @@
 {
   "name": "svelte-app",
-  "homepage": "https://simmoe.github.io/tema14-svelte",
+  "homepage": "https://helhoi.github.io/tema14-svelte",
   "version": "1.0.0",
   "scripts": {
     "build": "rollup -c",
